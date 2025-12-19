@@ -26,7 +26,7 @@ jobs:
         pytest --html=report.html --self-contained-html tests/  # 调整为你的测试脚本路径和名称
 
     - name: Upload Test Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-report
         path: report.html  # 确保路径正确指向你的HTML报告文件
