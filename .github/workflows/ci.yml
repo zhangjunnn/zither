@@ -1,0 +1,33 @@
+name: CI with Selenium Tests and Test Report
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium pytest pytest-html
+        pip install -r requirements.txt  # 如果有其他依赖，请确保它们被安装
+
+    - name: Run Selenium Tests
+      run: |
+        pytest --html=report.html --self-contained-html tests/  # 调整为你的测试脚本路径和名称
+
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-report
+        path: report.html  # 确保路径正确指向你的HTML报告文件
+
