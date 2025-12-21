@@ -23,7 +23,8 @@ jobs:
 
     - name: Run Selenium Tests
       run: |
-        pytest --html=report.html --self-contained-html tests/  # 调整为你的测试脚本路径和名称
+        #pytest --html=report.html --self-contained-html tests/  # 调整为你的测试脚本路径和名称
+        python demo.py
 
     - name: Upload Test Report
       uses: actions/upload-artifact@v4
