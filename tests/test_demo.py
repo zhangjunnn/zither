@@ -13,7 +13,7 @@ class TestBaidu:
         # 创建浏览器驱动
         #service = Service(executable_path="/usr/local/share/chromedriver-linux64/chromedriver")
         options = Options()
-        opt.add_argument('--headless=new')
+        options.add_argument('--headless=new')
         #options.add_argument("--start-maximized")
         self.driver = webdriver.Chrome(options=options)  # 如果驱动在PATH中，可以直接这样写
         #self.driver = webdriver.Chrome()
