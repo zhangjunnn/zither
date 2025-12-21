@@ -4,10 +4,6 @@ from selenium.webdriver.common.by import By
 import time
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-service = Service(executable_path="path/to/chromedriver")
-options = Options()
-options.add_argument("--start-maximized")
-driver = webdriver.Chrome(service=service, options=options)
 
 class TestBaidu:
     """百度搜索测试用例"""
