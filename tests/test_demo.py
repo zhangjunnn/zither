@@ -31,11 +31,11 @@ class TestBaidu:
         self.driver.get("https://www.baidu.com")
 
         # 定位搜索框并输入关键词
-        search_box = self.driver.find_element(By.ID, "kw")
+        search_box = self.driver.find_element(By.ID, "chat-textarea")
         search_box.send_keys("自动化测试")
 
         # 定位搜索按钮并点击
-        search_btn = self.driver.find_element(By.ID, "su")
+        search_btn = self.driver.find_element(By.ID, "chat-submit-button")
         search_btn.click()
 
         # 验证搜索结果
