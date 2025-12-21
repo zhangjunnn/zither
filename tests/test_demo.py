@@ -11,10 +11,11 @@ class TestBaidu:
     def setup_method(self):
         """每个测试方法前执行"""
         # 创建浏览器驱动
-        service = Service(executable_path="/usr/local/share/chromedriver-linux64/chromedriver")
-        options = Options()
-        options.add_argument("--start-maximized")
-        self.driver = webdriver.Chrome(service=service, options=options)  # 如果驱动在PATH中，可以直接这样写
+        #service = Service(executable_path="/usr/local/share/chromedriver-linux64/chromedriver")
+        #options = Options()
+        #options.add_argument("--start-maximized")
+        #self.driver = webdriver.Chrome(service=service, options=options)  # 如果驱动在PATH中，可以直接这样写
+        self.driver = webdriver.Chrome()
         self.driver.implicitly_wait(10)   # 隐式等待10秒
         self.driver.maximize_window()     # 最大化窗口
 
