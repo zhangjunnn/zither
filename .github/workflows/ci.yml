@@ -24,7 +24,7 @@ jobs:
     - name: Install ChromeDriver
       run: |
         CHROME_VERSION=$(google-chrome --version | cut -f 3 -d ' ' | cut -d '.' -f 1) \
-          && echo $CHROME_VERSION
+          && echo $CHROME_VERSION && chromedriver --version
 
     - name: Run Selenium Tests
       run: |
