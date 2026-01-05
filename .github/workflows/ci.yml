@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html
+        pip install selenium pytest pytest-html pytest-rerunfailures
         #pip install -r requirements.txt  # 如果有其他依赖，请确保它们被安装
 
     - name: Install ChromeDriver
@@ -51,4 +51,16 @@ jobs:
       with:
         name: test-report
         path: report.html
+    
+    - name: Upload ScreenShot
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshots
+        path: ./screenshots
+    
+    - name: Upload Log
+      uses: actions/upload-artifact@v4
+      with:
+        name: log
+        path: ./log
 
