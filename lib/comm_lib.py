@@ -50,6 +50,8 @@ class commLib:
             ],
     )
     log = Logger(os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/log')
+    if not os.path.exists(log):
+       os.makedirs(log)
     catcher = Catcher(driver,log)
 
     def screen_shot(self):
