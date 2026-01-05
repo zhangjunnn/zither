@@ -77,7 +77,7 @@ class commLib:
            self.driver.get(url)
         except:
            self.logger('open url failed.')
-           self.driver.screen_shot()
+           self.screen_shot()
            raise
 
     def gen_message_error(self,origin_by,locator,reference_content):
