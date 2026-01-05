@@ -42,12 +42,14 @@ jobs:
         path: report.html
     
     - name: Upload ScreenShot
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: screenshots
         path: ./screenshots
     
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: log
