@@ -34,9 +34,9 @@ class commLib:
     options = Options()
     options.add_argument('--headless=new') #headless mode
     options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
-    options.add_argument('window-size=1920x3000')
     driver = webdriver.Chrome(options=options)
     #driver.implicitly_wait(30) #default=0
+    driver.set_window_size(width=1920, height=1080)
     driver.maximize_window()
     driver.set_page_load_timeout(300)
     wait = WebDriverWait(
