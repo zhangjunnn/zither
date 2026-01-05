@@ -34,6 +34,15 @@ jobs:
             && chromedriver --version
 
     - name: Run Selenium Tests
+      env:
+        TESTRIGOR_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
+        TESTRIGOR_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
+        TESTRIGOR_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
+        TESTRIGOR_USER004_TOKEN: ${{secrets.TESTRIGOR_USER004_TOKEN}}
+        TEST_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
+        TEST_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
+        TEST_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
+        TEST_USER004_TOKEN: ${{secrets.TESTRIGOR_USER004_TOKEN}}
       run: |
         pytest --html=report.html --self-contained-html tests/  # 调整为你的测试脚本路径和名称
         #python tests/demo.py
