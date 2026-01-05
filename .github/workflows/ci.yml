@@ -33,9 +33,9 @@ jobs:
         TEST_USER004_TOKEN: ${{secrets.TESTRIGOR_USER004_TOKEN}}
       run: |
         pytest --html=report.html --self-contained-html test_cases/  #
-      if: failure()
 
     - name: Upload Test Report
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-report
