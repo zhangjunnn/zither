@@ -27,7 +27,8 @@ jobs:
         git clone https://github.com/umlaeute/v4l2loopback.git && cd v4l2loopback
         make && sudo make install
         sudo depmod -a
-        sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
+        sudo insmod v4l2loopback.ko devices=2 video_nr=21,22 card_label=VirtualCam1,VirtualCam2
+        #sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
         #sudo modprobe uvcvideo
         v4l2-ctl --list-devices
 
