@@ -20,7 +20,7 @@ from comm_lib import commLib
 
 #env = os.getenv("CUR_ENV")
 #tenant = os.getenv("CUR_TARGET")
-env='stg'
+env='uat'
 target='testrigor'
 
 class TestJoinMeeting(commLib):
