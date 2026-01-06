@@ -23,14 +23,10 @@ jobs:
 
     - name: Setup camera and microphone
       run: |
-        sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
-        sudo apt install build-essential linux-source dkms linux-headers-$(uname -r)
-        cd /usr/src
-        sudo apt-get source -b linux-image-$(uname -r)
-        cd linux*/drivers/media/usb/uvc/
-        sudo dkms add ./uvcvideo/
-        sudo dkms build -m uvcvideo -v $(uname -r) 
-        sudo dkms install -m uvcvideo -v $(uname -r) --force
+        #sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
+        git clone https:///umlaeute/v4l2loopback.git
+        make && sudo make install
+        sudo depmod -a
         sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
         sudo modprobe uvcvideo
         v4l2-ctl --list-devices
