@@ -20,7 +20,7 @@ from comm_lib import commLib
 
 #env = os.getenv("CUR_ENV")
 #tenant = os.getenv("CUR_TARGET")
-env='uat'
+env='stg'
 target='testrigor'
 
 class TestJoinMeeting(commLib):
@@ -51,8 +51,8 @@ class TestJoinMeeting(commLib):
         self.click_exactly_if_exist("Join")
         self.click_exactly_if_exist("Register")
         self.wait_page_loading()
-        self.wait_until_page_contains('Allow Access')
-        self.click_exactly('Allow Access')
+        #self.wait_until_page_contains('Allow Access')
+        #self.click_exactly('Allow Access')
         self.wait_until_page_contains('Join now')
         self.screen_shot()
         self.click('Join now')
