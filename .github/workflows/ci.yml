@@ -23,7 +23,7 @@ jobs:
 
     - name: Setup camera and microphone
       run: |
-        #sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
+        sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
         git clone https://github.com/umlaeute/v4l2loopback.git
         make && sudo make install
         sudo depmod -a
