@@ -33,6 +33,7 @@ class commLib:
     user_info=[] #{'name':'zhj','token':'','email':''}
     options = Options()
     options.add_argument('--headless=new') #headless mode
+    options.add_argument("--use-fake-ui-for-media-stream")
     options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
     #options.add_argument("--window-size=1920,1080")
     driver = webdriver.Chrome(options=options)
