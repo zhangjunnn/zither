@@ -25,7 +25,7 @@ jobs:
       run: |
         sudo apt-get update && sudo apt-get install -y ffmpeg
         ffmpeg -f lavfi -i testsrc=size=640x480:rate=30 -f v4l2 /dev/video0 &
-        ffmpeg -f lavfi -i anullsrc=r=44100:cl=stereo -f alsa default &
+        ffmpeg -f lavfi -i anullsrc -f alsa -ac 2 -channels_layout stereo -sample_fmt s16le -r 44100 default &
 
     - name: Run Selenium Tests
       env:
