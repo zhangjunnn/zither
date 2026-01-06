@@ -24,7 +24,7 @@ jobs:
     - name: Setup camera and microphone
       run: |
         sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
-        git clone https://github.com/umlaeute/v4l2loopback.git
+        git clone https://github.com/umlaeute/v4l2loopback.git && cd v4l2loopback
         make && sudo make install
         sudo depmod -a
         sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
