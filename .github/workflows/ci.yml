@@ -19,7 +19,13 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install selenium pytest pytest-html pytest-rerunfailures
-        #pip install -r requirements.txt  # 如果有其他依赖，请确保它们被安装
+        #pip install -r requirements.txt  # install other dependencies
+
+    - name: Setup ffmpeg
+      run: |
+        sudo apt-get update && sudo apt-get install -y ffmpeg
+        ffmpeg -f lavfi -i testsrc=size=640x480:rate=30 -f v4l2 /dev/video0 &
+        ffmpeg -f lavfi -i anullsrc=r=44100:cl=stereo -f alsa default &
 
     - name: Run Selenium Tests
       env:
