@@ -39,7 +39,7 @@ class TestJoinMeeting(commLib):
         self.screen_shot()
         self.driver.quit()
     
-    @pytest.mark.flaky(reruns=3, reruns_delay=10)
+    @pytest.mark.flaky(reruns=0, reruns_delay=10)
     def test_join_meeting(self):
         user_1 = self.user_login() 
         print(user_1)
