@@ -122,8 +122,8 @@ class commLib:
          #self.wait.until(
          #     lambda driver: visibility_of_element_located((By.XPATH,"//div[text()='Home']")) or
          #              visibility_of_element_located((By.CSS_SELECTOR,"input[placeholder='Enter your']"))
-         #     )
-         self.wait.until(visibility_of_element_located((By.XPATH,"//div[text()='Home']")) or visibility_of_element_located((By.CSS_SELECTOR,"input[placeholder='Enter your']")))
+         #     ) # --- not works
+         self.wait.until(visibility_of_element_located((By.XPATH,"//ul[@id='sidebar-menus']//div[text()='Home']")) or visibility_of_element_located((By.CSS_SELECTOR,"input[placeholder='Enter your']")),'can not see home page after one login')
 
          #self.driver.find_element(By.XPATH,value="//div[text()='Onelogin ・ DevAuth']").click()
          #time.sleep(20) 
