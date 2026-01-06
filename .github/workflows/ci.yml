@@ -30,7 +30,7 @@ jobs:
         sudo modprobe v4l2loopback devices=2 video_nr=21,22 card_label=VirtualCam1,VirtualCam2
         #sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
         #sudo modprobe uvcvideo
-        ls -l /dev/video* && sudo chmod 777 /dev/video*
+        ls -l /dev/video* && sudo chmod 666 /dev/video* && ls -l /dev/video* && sudo setenforce 0
         v4l2-ctl --device=/dev/video21 --info
 
     - name: Run Selenium Tests
