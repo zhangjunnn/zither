@@ -35,7 +35,7 @@ class commLib:
     options.add_argument('--headless=new') #headless mode
     options.add_argument("--use-fake-ui-for-media-stream")
     options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
-    #options.add_argument("--window-size=1920,1080")
+    #options.add_argument("--window-size=1920,1080") -- no use
     driver = webdriver.Chrome(options=options)
     #driver.implicitly_wait(30) #default=0
     driver.maximize_window()
@@ -309,7 +309,7 @@ class commLib:
         if (len(all_elements_matched_visible)>0):
            return all_elements_matched_visible[0]
 
-    def wait_until_page_contains(self,reference=None,fuzzy_search=True,xpath=None,css_selector=None,tag_name=None,tm=300):
+    def wait_until_page_contains(self,reference=None,fuzzy_search=True,xpath=None,css_selector=None,tag_name=None,tm=180):
         self.logger("waiting for: '%s'"%reference)
         search_info = self.get_searching_elem_info(reference,fuzzy_search,xpath,css_selector,tag_name)
         message = self.gen_message_error(search_info[2],search_info[1],reference)
