@@ -75,6 +75,7 @@ class commLib:
         self.logger('open url:%s'%url)
         try:
            self.driver.get(url)
+           self.driver.set_window_size(width=1920, height=1080)
         except:
            self.logger('open url failed.')
            self.screen_shot()
