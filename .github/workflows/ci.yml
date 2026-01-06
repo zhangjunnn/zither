@@ -33,7 +33,7 @@ jobs:
         #sudo modprobe uvcvideo
         ls -l /dev/video* && sudo chmod 666 /dev/video* && ls -l /dev/video*
         sudo v4l2-ctl --device=/dev/video21 --info
-        ffmpeg -f lavfi -i smptebars=size=1024x600 -pix_fmt yuv420p -f v4l2 /dev/video21
+        sudo ffmpeg -f lavfi -i smptebars=size=1024x600 -pix_fmt yuv420p -f v4l2 /dev/video21 &
 
     - name: Run Selenium Tests
       env:
