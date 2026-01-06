@@ -24,7 +24,7 @@ jobs:
     - name: Setup camera and microphone
       run: |
         sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
-        sudo add-apt-repository multiverse
+        sudo add-apt-repository ppa:canonical-kernel-team/ckts
         sudo apt-get update
         sudo apt-get install uvcvideo-dkms linux-headers-generic build-essential
         sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
