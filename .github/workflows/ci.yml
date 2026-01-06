@@ -24,8 +24,9 @@ jobs:
     - name: Setup camera and microphone
       run: |
         sudo apt update && sudo apt -y install v4l2loopback-dkms v4l2loopback-utils linux-modules-extra-$(uname -r)
-        sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1 &
-        sudo chmod 666 /dev/video0 && v4l2-ctl --list-devices
+        sudo modprobe v4l2loopback video_nr=1 card_label='My Virtual Camera' exclusive_caps=1
+        sudo modprobe uvcvideo
+        v4l2-ctl --list-devices
 
     - name: Run Selenium Tests
       env:
