@@ -28,8 +28,8 @@ class TestJoinMeeting(commLib):
 
     def setup_class(self):
         #---
-        self.logger("start: setup_class")
-        self.logger(self.driver)
+        #self.logger("start: setup_class")
+        #self.logger(self.driver)
         self.env=env
         self.target=target
 
@@ -38,7 +38,7 @@ class TestJoinMeeting(commLib):
         self.config.read('./config/%s.ini'%self.env)
         
     def teardown_class(self):
-        self.logger("start: teardown_class")
+        #self.logger("start: teardown_class")
         self.screen_shot()
         self.driver.quit()
     
