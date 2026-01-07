@@ -26,9 +26,9 @@ target='testrigor'
 class TestJoinMeeting(commLib):
     """join meeting test case"""
 
-    def setup_method(self):
+    def setup_class(self):
         #---
-        self.logger("start: setup_method")
+        self.logger("start: setup_class")
         self.logger(self.driver)
         self.env=env
         self.target=target
@@ -37,8 +37,8 @@ class TestJoinMeeting(commLib):
         self.config = configparser.ConfigParser()
         self.config.read('./config/%s.ini'%self.env)
         
-    def teardown_method(self):
-        self.logger("start: teardown_method")
+    def teardown_class(self):
+        self.logger("start: teardown_class")
         self.screen_shot()
         self.driver.quit()
     
