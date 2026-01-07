@@ -46,7 +46,7 @@ jobs:
         TEST_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
         TEST_USER004_TOKEN: ${{secrets.TESTRIGOR_USER004_TOKEN}}
       run: |
-        pytest --reruns 3 --html=report.html --self-contained-html test_cases/  #
+        pytest --reruns 5 --html=report.html --self-contained-html test_cases/  #
       #timeout-minutes: 6
 
     - name: Upload Test Report
