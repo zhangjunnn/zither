@@ -37,7 +37,9 @@ class commLib:
 
        #---load config
        self.config = configparser.ConfigParser()
-       self.config.read(os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/config/%s.ini'%self.env)
+       #base dir
+       base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+       self.config.read(base_dir + '/config/%s.ini'%self.env)
        self.users_in_using=[]
        self.user_order=0
        self.user_token_list=[]
@@ -49,12 +51,15 @@ class commLib:
        options.add_argument('--headless=new') #headless mode
        options.add_argument("--use-fake-ui-for-media-stream")
        options.add_argument("--use-fake-device-for-media-stream")
+       #1 -- allow,2 -- block
        options.add_experimental_option("prefs", {
              "profile.default_content_setting_values.media_stream_mic": 1,
              "profile.default_content_setting_values.media_stream_camera": 1,
              "profile.default_content_setting_values.geolocation": 1,
-             "profile.default_content_setting_values.notifications": 1
+             "profile.default_content_setting_values.notifications": 2
        })
+       options.add_argument("--use-file-for-fake-audio-capture=%s/data/001.wav"%base_dir)
+       options.add_argument("--use-file-for-fake-video-capture=%s/data/input2.mp4"%base_dir)
        options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
        #options.add_argument("--window-size=1920,1080") -- no use
        driver = webdriver.Chrome(options=options)
@@ -74,7 +79,8 @@ class commLib:
        )
        self.driver = driver
        self.wait = wait
-       log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/log'
+       self.base_dir = base_dir
+       log_dir = base_dir + '/log'
        if not os.path.exists(log_dir):
           os.makedirs(log_dir)
        self.log = Logger(log_dir)
@@ -87,7 +93,7 @@ class commLib:
        current_date = time.strftime("%Y-%m-%d", time.localtime(ct))
        t_ms = (ct - int(ct)) * 1000
        pic_name = "%s_%03d.png" % (current_time,t_ms)
-       pic_path = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/screenshots/'+current_date+'/'
+       pic_path = self.base_dir + '/screenshots/'+current_date+'/'
        if not os.path.exists(pic_path):
            os.makedirs(pic_path)  #
        self.driver.save_screenshot(pic_path + pic_name)
