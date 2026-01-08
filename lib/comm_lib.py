@@ -49,6 +49,12 @@ class commLib:
        options.add_argument('--headless=new') #headless mode
        options.add_argument("--use-fake-ui-for-media-stream")
        options.add_argument("--use-fake-device-for-media-stream")
+       options.add_experimental_option("prefs", {
+             "profile.default_content_setting_values.media_stream_mic": 1,
+             "profile.default_content_setting_values.media_stream_camera": 1,
+             "profile.default_content_setting_values.geolocation": 1,
+             "profile.default_content_setting_values.notifications": 1
+       })
        options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
        #options.add_argument("--window-size=1920,1080") -- no use
        driver = webdriver.Chrome(options=options)
