@@ -16,9 +16,14 @@ from selenium.webdriver.support.expected_conditions import *
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 
+from custom_expected_conditions import (
+   is_page_loading,
+)
+
 import os
 import time
 import datetime
+import configparser
 
 from catch_task import Catcher
 from fo import fileOperator
@@ -26,21 +31,30 @@ from Logger import Logger
 
 class commLib:
 
-    #def __init__(self):
-    users_in_using=[]
-    user_order=0
-    user_token_list=[]
-    user_info=[] #{'name':'zhj','token':'','email':''}
-    options = Options()
-    options.add_argument('--headless=new') #headless mode
-    options.add_argument("--use-fake-ui-for-media-stream")
-    options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
-    #options.add_argument("--window-size=1920,1080") -- no use
-    driver = webdriver.Chrome(options=options)
-    #driver.implicitly_wait(30) #default=0
-    driver.maximize_window()
-    driver.set_page_load_timeout(300)
-    wait = WebDriverWait(
+    def init(self,env,target):
+       self.env=env
+       self.target=target
+
+       #---load config
+       self.config = configparser.ConfigParser()
+       self.config.read(os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/config/%s.ini'%self.env)
+       self.users_in_using=[]
+       self.user_order=0
+       self.user_token_list=[]
+       self.user_info=[] #{'name':'zhj','token':'','email':''}
+       options = Options()
+       options.add_argument("--disable-infobars")
+       options.add_argument("--disable-dev-shm-usage")
+       options.add_argument("--no-sandbox")
+       options.add_argument('--headless=new') #headless mode
+       options.add_argument("--use-fake-ui-for-media-stream")
+       options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
+       #options.add_argument("--window-size=1920,1080") -- no use
+       driver = webdriver.Chrome(options=options)
+       #driver.implicitly_wait(30) #default=0
+       driver.maximize_window()
+       driver.set_page_load_timeout(300)
+       wait = WebDriverWait(
             driver,
             timeout=30,
             poll_frequency=.2,
@@ -50,13 +64,16 @@ class commLib:
                 ElementNotInteractableException,
                 
             ],
-    )
-    log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/log'
-    if not os.path.exists(log_dir):
-       os.makedirs(log_dir)
-    log = Logger(log_dir)
-    catcher = Catcher(driver,log)
-
+       )
+       self.driver = driver
+       self.wait = wait
+       log_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))+'/log'
+       if not os.path.exists(log_dir):
+          os.makedirs(log_dir)
+       self.log = Logger(log_dir)
+       self.catcher = Catcher(driver,self.log)
+    
+     
     def screen_shot(self):
        ct = time.time()
        current_time = time.strftime("%Y-%m-%d-%H_%M_%S", time.localtime(ct))
@@ -111,7 +128,7 @@ class commLib:
                        visibility_of_element_located((By.CSS_SELECTOR,"input[placeholder='Enter your']"))
       )
       if self.is_present('Onelogin ・ DevAuth'):
-         self.logger("start onelog") 
+         self.logger("start onelogin") 
          self.click('Onelogin ・ DevAuth')
          #self.driver.find_element(By.ID,"username").send_keys("jun@gradual.com")
          self.type("jun@gradual.com","username")
@@ -213,7 +230,7 @@ class commLib:
         #wait to be loading
         try:
            WebDriverWait(self.driver,5,0.2).until(
-              visibility_of_element_located((By.CSS_SELECTOR,".css-0")) or visibility_of_element_located((By.CSS_SELECTOR,".nprogress-busy"))
+              is_page_loading
               )
            page_loading = True
            self.logger('the page is loading')
@@ -223,8 +240,8 @@ class commLib:
         #wait to disappear
         if page_loading :
               self.logger('wait page loading')
-              WebDriverWait(self.driver,300,0.2).until_not(
-                visibility_of_element_located((By.CSS_SELECTOR,".css-0")) or visibility_of_element_located((By.CSS_SELECTOR,".nprogress-busy")),'page is still loading...'
+              WebDriverWait(self.driver,180,0.2).until_not(
+                is_page_loading,'page is still loading...'
                )
               self.logger('page load finished')
 

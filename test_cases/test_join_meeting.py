@@ -26,18 +26,19 @@ target='testrigor'
 class TestJoinMeeting(commLib):
     """join meeting test case"""
 
-    def setup_class(self):
+    def setup_method(self):
+        self.init(env,target)
         #---
         #self.logger("start: setup_class")
         #self.logger(self.driver)
-        self.env=env
-        self.target=target
+        #self.env=env
+        #self.target=target
 
         #---load config
-        self.config = configparser.ConfigParser()
-        self.config.read('./config/%s.ini'%self.env)
+        #self.config = configparser.ConfigParser()
+        #self.config.read('./config/%s.ini'%self.env)
         
-    def teardown_class(self):
+    def teardown_method(self):
         #self.logger("start: teardown_class")
         self.screen_shot()
         self.driver.quit()
@@ -54,7 +55,7 @@ class TestJoinMeeting(commLib):
         self.click_exactly_if_exist("Join")
         self.click_exactly_if_exist("Register")
         self.wait_page_loading()
-        self.wait_until_page_contains('Allow Access')
+        #self.wait_until_page_contains('Allow Access')
         #self.click_exactly('Allow Access')
         self.wait_until_page_contains('Join now')
         self.screen_shot()
