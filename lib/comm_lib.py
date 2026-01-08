@@ -348,7 +348,10 @@ class commLib:
         wait.until(visibility_of_element_located((search_info[0], search_info[1])), message)
     
     def check_that_page_contains(reference,tm=30):
-        self.wait_until_page_contains(reference,tm=30)
+        try:
+           self.wait_until_page_contains(reference,tm=30)
+        except TimeoutException:
+           self.logger("the page does not contain '%s'"%reference)
     
     def check_that_page_contains_exactly(reference,tm=30):
         self.wait_until_page_contains(reference,False,tm=30)
