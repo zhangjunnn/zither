@@ -58,9 +58,9 @@ class TestJoinMeeting(commLib):
         #self.wait_until_page_contains('Allow Access')
         #self.click_exactly('Allow Access')
         self.wait_until_page_contains('Join now')
-        self.screen_shot()
         self.click('Join now')
         self.wait_until_page_contains(user_1['userUglyName'])
+        self.screen_shot()
         time.sleep(10)
         self.click_exactly('EXIT')
          
