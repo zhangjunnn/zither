@@ -61,7 +61,7 @@ class TestJoinMeeting(commLib):
         self.screen_shot()
         self.click('Join now')
         self.wait_until_page_contains(user_1['userUglyName'])
-        time.sleep(60)
+        time.sleep(10)
         self.click_exactly('EXIT')
          
 if __name__ == "__main__":
