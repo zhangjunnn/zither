@@ -59,7 +59,7 @@ class commLib:
              "profile.default_content_setting_values.notifications": 2
        })
        options.add_argument("--use-file-for-fake-audio-capture=%s/data/001.wav"%base_dir)
-       options.add_argument("--use-file-for-fake-video-capture=%s/data/input2.y4m"%base_dir)
+       #options.add_argument("--use-file-for-fake-video-capture=%s/data/input2.y4m"%base_dir)
        options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
        #options.add_argument("--window-size=1920,1080") -- no use
        driver = webdriver.Chrome(options=options)
@@ -350,6 +350,7 @@ class commLib:
     def check_that_page_contains(reference,tm=30):
         try:
            self.wait_until_page_contains(reference,tm=30)
+           self.logger("the page contains '%s'"%reference)
         except TimeoutException:
            self.logger("the page does not contain '%s'"%reference)
     
