@@ -345,7 +345,7 @@ class commLib:
         message = self.gen_message_error(search_info[2],search_info[1],reference)
         wait = WebDriverWait(self.driver,tm,0.2)
         #self.logger("wait_until_page_contains:%s,%s"%(search_info[0],search_info[1]))
-        wait.until(visibility_of_element_located((search_info[0], search_info[1])), message)
+        wait.until(element_to_be_clickable((search_info[0], search_info[1])), message)
     
     def check_that_page_contains(reference,tm=30):
         try:
