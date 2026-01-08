@@ -62,7 +62,7 @@ class TestJoinMeeting(commLib):
         self.click('Join now')
         self.wait_until_page_contains(user_1['userUglyName'])
         time.sleep(60)
-        click_exactly('EXIT')
+        self.click_exactly('EXIT')
          
 if __name__ == "__main__":
     pytest.main(["-v", "test_join_meeting.py"])
