@@ -78,4 +78,15 @@ jobs:
       with:
         name: log
         path: ./log
-
+    
+    - name: name: Slack Notification
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_COLOR: "${{ fromJson('{\"false\" : \"success\", \"true\": \"failure\"}')[contains(steps.testrun.outcome, 'failure')] }}"
+        SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png
+        SLACK_MESSAGE: "<!here>"
+        SLACK_TITLE:  ":fire:"
+        SLACK_USERNAME: Jun
+        SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_AUTOTEST}}
+        MSG_MINIMAL: true
+        SLACK_CHANNEL: automated-test-notification
