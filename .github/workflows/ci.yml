@@ -3,7 +3,7 @@ name: Smoke test in CI
 on: [push, pull_request]
 
 env:
-  TEST_ENV: stg
+  TEST_ENV: uat
   TEST_TENANT: test
 
 jobs:
@@ -80,7 +80,7 @@ jobs:
       env:
         SLACK_COLOR: "${{ fromJson('{\"false\" : \"success\", \"true\": \"failure\"}')[contains(steps.testrun.outcome, 'failure')] }}"
         SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png?size=48
-        SLACK_TITLE: "Smoke tests on ${{env.TEST_ENV}} in CI"
+        SLACK_TITLE: "Smoke tests on *${{env.TEST_ENV}}* in CI"
         SLACK_MESSAGE_ON_SUCCESS: "Smoke test successfully!"
         SLACK_MESSAGE_ON_FAILURE: "Smoke test failed, please check it at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         #SLACK_USERNAME: Jun
