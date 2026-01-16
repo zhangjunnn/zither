@@ -81,8 +81,8 @@ jobs:
         SLACK_COLOR: "${{ fromJson('{\"false\" : \"success\", \"true\": \"failure\"}')[contains(steps.testrun.outcome, 'failure')] }}"
         SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png?size=48
         SLACK_TITLE: "Smoke test on ${{env.TEST_ENV}} in CI"
-        SLACK_MESSAGE_ON_SUCCESS: "Smoke test successfully!"
-        SLACK_MESSAGE_ON_FAILURE: "Smoke test failed, please check it at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        SLACK_MESSAGE_ON_SUCCESS: ":thumbsup: Smoke test successfully!"
+        SLACK_MESSAGE_ON_FAILURE: ":fire: Smoke test failed, please check it at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         #SLACK_USERNAME: Jun
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_AUTOTEST}}
         MSG_MINIMAL: true
