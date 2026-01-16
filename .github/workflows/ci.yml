@@ -3,7 +3,7 @@ name: Smoke test in CI
 on: [push, pull_request]
 
 env:
-  TEST_ENV: uat
+  TEST_ENV: stg
   TEST_TENANT: test
 
 jobs:
@@ -86,5 +86,5 @@ jobs:
         #SLACK_USERNAME: Jun
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_AUTOTEST}}
         MSG_MINIMAL: true
-        SLACK_FOOTER: -
+        SLACK_FOOTER: ''
         SLACK_CHANNEL: automated-test-notification
