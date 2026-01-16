@@ -86,4 +86,4 @@ jobs:
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK}}
         MSG_MINIMAL: true
         SLACK_FOOTER: ''
-        SLACK_CHANNEL: automated-test-notification
+        SLACK_CHANNEL: ${{vars.SLACK_CHANNEL}}
