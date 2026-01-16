@@ -48,7 +48,7 @@ class TestJoinMeeting(commLib):
         print(user_1)
         
         #search event:meeting
-        self.type("Meeting003-for-ci-test","Search")
+        self.type("Meeting004-for-regression-test","Search")
         self.type(Keys.ENTER,"Search")
         self.wait_until_page_contains("Search results for")
         self.wait_page_loading()
