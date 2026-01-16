@@ -81,9 +81,9 @@ jobs:
         SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png?size=48
         SLACK_TITLE: "Smoke test on *${{env.TEST_ENV}}* in CI"
         SLACK_MESSAGE_ON_SUCCESS: ":thumbsup: smoke test successfully!"
-        SLACK_MESSAGE_ON_FAILURE: ":fire: smoke test failed, <!here>please check it at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        SLACK_MESSAGE_ON_FAILURE: ":fire: <!here> smoke test failed, please check out at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         #SLACK_USERNAME: Jun
-        SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_AUTOTEST}}
+        SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK}}
         MSG_MINIMAL: true
         SLACK_FOOTER: ''
         SLACK_CHANNEL: automated-test-notification
