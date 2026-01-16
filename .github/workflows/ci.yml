@@ -50,7 +50,7 @@ jobs:
     - name: Run Testcases
       id: testrun
       env:
-        TEST_ENV: ${{ github.event_name }} === 'workflow_dispatch' ? ${{inputs.testEnv}} : 'stg'
+        TEST_ENV: ${{ github.event_name  == 'workflow_dispatch' && inputs.testEnv || 'stg'}}
         TESTRIGOR_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
         TESTRIGOR_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
         TESTRIGOR_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
@@ -110,4 +110,4 @@ jobs:
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK}}
         MSG_MINIMAL: true
         SLACK_FOOTER: ''
-        SLACK_CHANNEL: ${{ github.event_name }} === 'workflow_dispatch' ? 'product-dev-team' : 'automated-test-notification' 
+        SLACK_CHANNEL: ${{ github.event_name  == 'workflow_dispatch' && 'product-dev-team' || 'automated-test-notification'}}
