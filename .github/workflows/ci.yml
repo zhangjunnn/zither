@@ -111,4 +111,4 @@ jobs:
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK}}
         MSG_MINIMAL: true
         SLACK_FOOTER: ''
-        SLACK_CHANNEL: ${{ github.event_name  == 'workflow_dispatch' && 'product-dev-team' || 'automated-test-notification'}}
+        SLACK_CHANNEL: ${{ github.event_name  == 'workflow_dispatch' && vars.SLACK_CHANNEL || vars.SLACK_CHANNEL_DEBUG}}
