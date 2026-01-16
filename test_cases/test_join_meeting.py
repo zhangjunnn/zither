@@ -27,7 +27,7 @@ class TestJoinMeeting(commLib):
     """join meeting test case"""
 
     def setup_method(self):
-        self.init(os.getenv("TEST_ENV"),os.getenv("TEST_TENANT"))
+        self.init(os.getenv("TEST_ENV"),'test')
         #---
         #self.logger("start: setup_class")
         #self.logger(self.driver)
@@ -48,7 +48,7 @@ class TestJoinMeeting(commLib):
         print(user_1)
         
         #search event:meeting
-        self.type("Meeting009-for-regression-test","Search")
+        self.type("Meeting004-for-regression-test","Search")
         self.type(Keys.ENTER,"Search")
         self.wait_until_page_contains("Search results for")
         self.wait_page_loading()
@@ -59,7 +59,7 @@ class TestJoinMeeting(commLib):
         #self.click_exactly('Allow Access')
         self.wait_until_page_contains('Join now')
         self.click('Join now')
-        self.wait_until_page_contains(user_1['userUglyName'])
+        self.wait_until_page_contains(user_1['userUglyName']+'d')
         self.screen_shot()
         time.sleep(10)
         self.click_exactly('EXIT')
