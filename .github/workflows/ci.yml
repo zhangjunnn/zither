@@ -2,6 +2,10 @@ name: Smoke test in CI
 
 on: [push, pull_request]
 
+env:
+  TEST_ENV: stg
+  TEST_TENANT: test
+
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -24,9 +28,6 @@ jobs:
     - name: Run Testcases
       id: testrun
       env:
-        TEST_ENV: stg
-        TEST_TENANT: test        
-
         TESTRIGOR_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
         TESTRIGOR_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
         TESTRIGOR_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
@@ -74,13 +75,16 @@ jobs:
         path: ./log
     
     - name: Slack Notification
+      if: always()
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_COLOR: "${{ fromJson('{\"false\" : \"success\", \"true\": \"failure\"}')[contains(steps.testrun.outcome, 'failure')] }}"
-        SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png
-        SLACK_MESSAGE: "<!here>"
-        SLACK_TITLE: "Smoke tests in CI: ${{ steps.testrun.outcome }}"
+        SLACK_ICON: https://d2xo500swnpgl1.cloudfront.net/uploads/web/square-logo-1631146631676.png?size=48
+        SLACK_TITLE: "Smoke tests on ${{env.TEST_ENV}} in CI"
+        SLACK_MESSAGE_ON_SUCCESS: "Smoke test successfully!"
+        SLACK_MESSAGE_ON_FAILURE: "Smoke test failed, please check it at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         #SLACK_USERNAME: Jun
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK_AUTOTEST}}
         MSG_MINIMAL: true
+        SLACK_FOOTER: false
         SLACK_CHANNEL: automated-test-notification
