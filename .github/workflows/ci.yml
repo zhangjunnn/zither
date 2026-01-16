@@ -32,6 +32,7 @@ jobs:
         #sudo ffmpeg -f lavfi -i smptebars=size=1024x600 -pix_fmt yuv420p -f v4l2 /dev/video21 &
 
     - name: Run Selenium Tests
+      id: testrun
       env:
         TESTRIGOR_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
         TESTRIGOR_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
