@@ -1,9 +1,32 @@
 name: Smoke test in CI
 
-on: [push, pull_request]
+on:
+  push:
 
-env:
-  TEST_ENV: stg
+  pull_request:
+   
+  workflow_dispatch:
+    inputs:
+      testEnv:
+        description: 'environment name to test'
+        required: true
+        default: 'stg'
+        type: choice
+        options:
+        - stg
+        - uat
+        - dev2
+        - dev3
+        - dev4
+        - dev5
+        - dev6
+        - dev7
+        - dev8
+        - dev9
+        - dev10
+        - dev11
+        - dev12
+        - dev13
 
 jobs:
   test:
@@ -27,6 +50,7 @@ jobs:
     - name: Run Testcases
       id: testrun
       env:
+        TEST_ENV: ${{ github.event_name }} === 'workflow_dispatch' ? ${{inputs.testEnv}} : 'stg'
         TESTRIGOR_USER001_TOKEN: ${{secrets.TESTRIGOR_USER001_TOKEN}}
         TESTRIGOR_USER002_TOKEN: ${{secrets.TESTRIGOR_USER002_TOKEN}}
         TESTRIGOR_USER003_TOKEN: ${{secrets.TESTRIGOR_USER003_TOKEN}}
@@ -86,4 +110,4 @@ jobs:
         SLACK_WEBHOOK: ${{secrets.SLACK_WEBHOOK}}
         MSG_MINIMAL: true
         SLACK_FOOTER: ''
-        SLACK_CHANNEL: ${{vars.SLACK_CHANNEL}}
+        SLACK_CHANNEL: ${{ github.event_name }} === 'workflow_dispatch' ? 'product-dev-team' : 'automated-test-notification' 
