@@ -20,14 +20,14 @@ from comm_lib import commLib
 
 #env = os.getenv("CUR_ENV")
 #tenant = os.getenv("CUR_TARGET")
-env='stg'
-target='testrigor'
+#env='stg'
+#target='testrigor'
 
 class TestJoinMeeting(commLib):
     """join meeting test case"""
 
     def setup_method(self):
-        self.init(env,target)
+        self.init(os.getenv("TEST_ENV"),os.getenv("TEST_TENANT"))
         #---
         #self.logger("start: setup_class")
         #self.logger(self.driver)
