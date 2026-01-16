@@ -80,7 +80,7 @@ jobs:
         name: log
         path: ./log
     
-    - name: name: Slack Notification
+    - name: Slack Notification
       uses: rtCamp/action-slack-notify@v2
       env:
         SLACK_COLOR: "${{ fromJson('{\"false\" : \"success\", \"true\": \"failure\"}')[contains(steps.testrun.outcome, 'failure')] }}"
