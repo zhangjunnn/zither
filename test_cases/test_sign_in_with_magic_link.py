@@ -18,8 +18,6 @@ import datetime
 import time
 import sys
 
-import pyautogui
-
 sys.path.append("./lib")
 from comm_lib import commLib
 
