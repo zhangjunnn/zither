@@ -46,7 +46,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium pytest pytest-html pytest-rerunfailures
+        pip install selenium pytest pytest-html pytest-rerunfailures opencv-python pyotp
         #pip install -r requirements.txt  # install other dependencies
 
     - name: Run Testcases

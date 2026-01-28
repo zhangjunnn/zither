@@ -8,28 +8,32 @@ from selenium.common import (
     StaleElementReferenceException,
     TimeoutException,
 )
-#from selenium.common.exceptions import NoSuchElementException
-#from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support.expected_conditions import *
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
+from selenium.webdriver.common.actions.mouse_button import MouseButton
 
 from custom_expected_conditions import (
    is_page_loading,
 )
-
+import pyotp
+import cv2
 import os
 import time
 import datetime
 import configparser
 
 from catch_task import Catcher
-from fo import fileOperator
 from Logger import Logger
+from tm import TimeOut
+from util import Util
 
-class commLib:
+class commLib(Util):
 
     def init(self,env,target):
        self.env=env
@@ -37,32 +41,41 @@ class commLib:
 
        #---load config
        self.config = configparser.ConfigParser()
+       self.data = configparser.RawConfigParser()
        #base dir
-       base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
-       self.config.read(base_dir + '/config/%s.ini'%self.env)
+       self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+       config_file_path = self.base_dir + '/config/%s.ini'%self.env
+       assert os.path.exists(config_file_path),'config file:%s.ini not exist!'%self.env
+       self.config.read(config_file_path)
+       data_file_path = self.base_dir + '/data/data.ini'
+       assert os.path.exists(data_file_path),'data file: data.ini not exist!'
+       self.data.read(data_file_path)
        self.users_in_using=[]
        self.user_order=0
        self.user_token_list=[]
        self.user_info=[] #{'name':'zhj','token':'','email':''}
+       self.browsers_tabs={} #{'browser name1':{'tab_queue':[handle1,handle2,...],'cur_tab':handle1,'browser name2':...}
        options = Options()
+       #options = webdriver.FirefoxOptions()
        options.add_argument("--disable-infobars")
+       options.add_argument("--disable-blink-features=AutomationControlled")
        options.add_argument("--disable-dev-shm-usage")
        options.add_argument("--no-sandbox")
-       options.add_argument('--headless=new') #headless mode
+       #options.add_argument('--headless=new') #headless mode
        options.add_argument("--use-fake-ui-for-media-stream")
        options.add_argument("--use-fake-device-for-media-stream")
-       #1 -- allow,2 -- block
-       options.add_experimental_option("prefs", {
-             "profile.default_content_setting_values.media_stream_mic": 1,
-             "profile.default_content_setting_values.media_stream_camera": 1,
-             "profile.default_content_setting_values.geolocation": 1,
-             "profile.default_content_setting_values.notifications": 2
-       })
-       options.add_argument("--use-file-for-fake-audio-capture=%s/data/001.wav"%base_dir)
-       options.add_argument("--use-file-for-fake-video-capture=%s/data/input2.y4m"%base_dir)
-       options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
+       options.add_argument("--disable-popup-blocking")
+       options.add_argument("--disable-notifications")
+       options.add_argument("--disable-extensions")
+       audio_file = self.get_data('mic input')
+       video_file = self.get_data('camera input')
+       options.add_argument("--use-file-for-fake-audio-capture=%s"%audio_file)
+       options.add_argument("--use-file-for-fake-video-capture=%s"%video_file)
+       #options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) Chrome/120.0.0.0') #skip check
+       options.add_argument(f'user-agent=Mozilla/5.0 (Gradual;E2E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36')
        #options.add_argument("--window-size=1920,1080") -- no use
        driver = webdriver.Chrome(options=options)
+       #driver = webdriver.Edge(options=options)
        #driver.implicitly_wait(30) #default=0
        driver.maximize_window()
        driver.set_page_load_timeout(300)
@@ -79,13 +92,96 @@ class commLib:
        )
        self.driver = driver
        self.wait = wait
-       self.base_dir = base_dir
-       log_dir = base_dir + '/log'
+       self.browsers_tabs['default'] = {'tab_queue': [self.driver.current_window_handle], 'cur_tab':self.driver.current_window_handle}
+       self.cur_browser = 'default'
+       
+
+       log_dir = self.base_dir + '/log'
        if not os.path.exists(log_dir):
           os.makedirs(log_dir)
        self.log = Logger(log_dir)
        self.catcher = Catcher(driver,self.log)
-    
+
+    def get_data(self,var_name):
+       type = self.data.get(var_name,'type')
+       value = self.data.get(var_name,'value')
+
+       if type == 'file':
+          return self.base_dir + '/data/' + value
+
+       elif type == 'string':
+          return value
+
+       else:
+           assert False,'type: %s not defined'%type
+
+ 
+    def start_browser(self,name):
+       assert name not in self.browsers_tabs.keys(),"Browser '%s' has already existed"%name
+       
+       cur_handles = list(self.driver.window_handles)
+       window_num = len(cur_handles) + 1
+       self.driver.switch_to.new_window('window')
+       self.wait.until(number_of_windows_to_be(window_num))
+       
+       new_handle = list(set(self.driver.window_handles) - set(cur_handles))[0]
+       self.browsers_tabs[name] = {'tab_queue':[new_handle],'cur_tab':new_handle}
+       self.cur_browser = name
+       self.logger('start browser:%s(%s)'%(name,new_handle))
+             
+    def switch_to_browser(self,name):
+       assert name in self.browsers_tabs.keys(),"Browser '%s' not exist"%name
+       self.logger('switch to browser: %s(%s)'%(name,self.browsers_tabs[name]['cur_tab']))
+       self.driver.switch_to.window(self.browsers_tabs[name]['cur_tab'])
+       self.cur_browser = name
+ 
+    def open_new_tab(self):
+        cur_handles = list(self.driver.window_handles)
+        window_num = len(cur_handles) + 1
+        self.driver.switch_to.new_window('tab')
+        self.wait.until(number_of_windows_to_be(window_num))
+        new_handle = list(set(self.driver.window_handles) - set(cur_handles))[0]
+        self.browsers_tabs[self.cur_browser]['tab_queue'].append(new_handle)
+        self.browsers_tabs[self.cur_browser]['cur_tab'] = new_handle
+        self.logger('open new tab: %s in browser %s'%(new_handle,self.cur_browser))
+
+    #case auto opening new tab after clicking a link
+    def add_new_win_handle_if_exist(self):
+        cur_handles = []
+        for browser in self.browsers_tabs:
+            cur_handles = cur_handles + self.browsers_tabs[browser]['tab_queue']
+        diff = list(set(self.driver.window_handles) - set(cur_handles))
+        if diff:
+          new_handle = diff[0]
+          self.logger('new handle found: %s'%new_handle)
+          self.browsers_tabs[self.cur_browser]['tab_queue'].append(new_handle)
+          self.driver.switch_to.window(new_handle)
+          self.browsers_tabs[self.cur_browser]['cur_tab'] = new_handle
+
+    def switch_to_tab(self,order):
+       assert int(order) <= len(self.browsers_tabs[self.cur_browser]['tab_queue']),'tab order [%d] not exist'%order
+       target_handle = self.browsers_tabs[self.cur_browser]['tab_queue'][int(order) - 1]
+       self.logger('switch to tab: %s in browser %s'%(target_handle,self.cur_browser))
+       self.driver.switch_to.window(target_handle)
+       self.browsers_tabs[self.cur_browser]['cur_tab'] = target_handle
+     
+    def close_tab(self):
+       target_handle = self.browsers_tabs[self.cur_browser]['cur_tab']
+       self.driver.close()
+       self.logger('close tab: %s in browser %s'%(target_handle,self.cur_browser))
+       if len(self.browsers_tabs[self.cur_browser]['tab_queue']) > 1:
+          cur_index = self.browsers_tabs[self.cur_browser]['tab_queue'].index(target_handle)
+          next_index = cur_index - 1 if cur_index != 0 else 1
+          next_handle = self.browsers_tabs[self.cur_browser]['tab_queue'][next_index]
+          self.browsers_tabs[self.cur_browser]['tab_queue'].remove(target_handle)
+          self.logger('switch to tab: %s'%next_handle)
+          self.driver.switch_to.window(next_handle)
+          self.browsers_tabs[self.cur_browser]['cur_tab'] = next_handle
+       else:
+          del self.browsers_tabs[self.cur_browser]
+          
+          if not self.browsers_tabs:
+             self.switch_to_browser(self.browsers_tabs.keys[0])
      
     def screen_shot(self):
        ct = time.time()
@@ -107,6 +203,8 @@ class commLib:
         try:
            self.driver.get(url)
            self.driver.set_window_size(width=1920, height=1080)
+           self.win_size = self.driver.get_window_size()
+
         except:
            self.logger('open url failed.')
            self.screen_shot()
@@ -248,6 +346,7 @@ class commLib:
            page_loading = True
            self.logger('the page is loading')
         except TimeoutException:
+            self.logger('the page is not loading')
             page_loading = False
 
         #wait to disappear
@@ -281,73 +380,182 @@ class commLib:
         else:
            tag = '*'
         return "//%s[text()='%s' or  @class='%s' or @id='%s' or @name='%s' or @placeholder='%s' or @value='%s' or @aria-label='%s']"%(tag,reference,reference,reference,reference,reference,reference,reference)
-    def click_if_exist(self,reference,fuzzy_search=True):
+    
+    def click_if_exist(self,reference,fuzzy_search=True,with_offset=None):
+        self.action_if_exist('click',reference,fuzzy_search,with_offset)
+    
+    def hover_over_if_exist(self,reference,fuzzy_search=True,with_offset=None):
+        self.action_if_exist('hover_over',reference,fuzzy_search,with_offset)
+    
+    def action_if_exist(self,action_type,reference,fuzzy_search,with_offset):
         time.sleep(3)
         elem = self.is_present(reference=reference,fuzzy_search=fuzzy_search)
         if elem:
-           self.logger("'%s' exist when clicking"%reference)
-           elem.click()
+           self.logger("'%s' exist when %sing"%(reference,action_type))
+           self.elem_action(elem,'click',with_offset)
         else:
-           self.logger("'%s' not exist when clicking"%reference)
+           self.logger("'%s' not exist when %sing"%(reference,action_type))
 
-    def click_exactly_if_exist(self,reference):
-        self.click_if_exist(reference,False)
+    def hover_over_exactly_if_exist(self,reference,with_offset=None):
+        self.hover_over_if_exist(reference,False,with_offset=with_offset)
+
+    def click_exactly_if_exist(self,reference,with_offset=None):
+        self.click_if_exist(reference,False,with_offset)
     
-    def click_exactly(self,reference):
-        self.click(reference,False)
+    def click_exactly(self,reference,with_offset=None):
+        self.click(reference,False,with_offset=with_offset)
+    
+    def triple_click(self,reference,fuzzy_search=True,search_tag=None,with_offset=None):
+        self.action_reference('triple_click',reference,fuzzy_search,search_tag,with_offset)
+    
+    def double_click(self,reference,fuzzy_search=True,search_tag=None,with_offset=None):
+        self.action_reference('double_click',reference,fuzzy_search,search_tag,with_offset)
 
-    def click(self,reference,fuzzy_search=True,search_tag=None):
+    def click(self,reference,fuzzy_search=True,search_tag=None,with_offset=None):
+        self.action_reference('click',reference,fuzzy_search,search_tag,with_offset)
+
+    def action_reference(self,action_type,reference,fuzzy_search,search_tag,with_offset):
         if fuzzy_search:
               xpath = self.get_fuzzy_xpath(reference)
         else:
               xpath = self.get_exact_xpath(reference)
         
         #self.logger('click elem by reference[%s],xpath: %s'%(reference,xpath))
-        self.logger("click elem by reference: '%s'"%reference)
+        self.logger("%s elem by reference: '%s'"%(action_type,reference))
         elem = self.is_present(reference=reference,fuzzy_search=fuzzy_search,search_tag=search_tag)
-        if elem:
-           elem.click()
-        else:
-            self.wait.until(visibility_of_element_located((By.XPATH, xpath)), "Can't find element '%s'"%reference)
-            self.driver.find_elements(By.XPATH,xpath)[0].click()
-        
-        
-    def click_xpath(self,xpath):
-        self.logger('click elem by xpath: %s'%xpath)
-        elem = self.is_present(xpath=xpath)
-        if elem:
-           elem.click()
+        if not elem:
+            #self.wait.until(visibility_of_element_located((By.XPATH, xpath)), "Can't find element '%s'"%reference)
+            self.wait.until(element_to_be_clickable((By.XPATH, xpath)), "Can't find element '%s'"%reference)
+            elem = self.driver.find_elements(By.XPATH,xpath)[0]
 
-        else:
-           self.wait.until(visibility_of_element_located((By.XPATH, xpath)), "Can't find element by xpath '%s'"%xpath)
-           self.driver.find_elements(By.XPATH,xpath)[0].click()
+        self.elem_action(elem,action_type,with_offset)
         
-    def click_css_selector(self,css_selector):
+        
+        self.add_new_win_handle_if_exist()
+    
+    def hover_over(self,reference,fuzzy_search=True,search_tag=None,with_offset=None):
+       self.action_reference('hover_over',reference,fuzzy_search,search_tag,with_offset)
+
+    def click_the_middle_of_screen(self,offset="0,0"):
+        size = self.win_size
+        action = ActionBuilder(self.driver)
+        action.pointer_action.move_to_location(int(size.get("width")/2), int(size.get("height")/2))
+        action.perform()
+        self.logger("middle coordinates:%d,%d"%(int(size.get("width")/2), int(size.get("height")/2)))
+        offset_x,offset_y = self.parse_coordinates(offset)
+        ActionChains(self.driver).move_by_offset(offset_x,offset_y).click().perform()        
+
+    def parse_coordinates(self,input_str):
+       return int(input_str.split(',')[0]),int(input_str.split(',')[1])
+    
+    #action_type:click,double_click,hover_over
+    def elem_action(self,elem,action_type,with_offset=None):
+        self.to_be_in_viewport(elem)
+
+        if action_type == 'click':
+          if with_offset:
+                offset_x,offset_y = self.parse_coordinates(with_offset)
+                ActionChains(self.driver).move_to_element_with_offset(elem, offset_x, offset_y).click().perform()
+          else:
+              elem.click()
+
+        elif action_type == 'hover_over':
+          if with_offset:
+             offset_x,offset_y = self.parse_coordinates(with_offset)
+             ActionChains(self.driver).move_to_element_with_offset(elem, offset_x, offset_y).perform()
+          else:
+            ActionChains(self.driver).move_to_element_with_offset(elem).perform()
+        
+        elif action_type == 'double_click':
+            if with_offset:
+               offset_x,offset_y = self.parse_coordinates(with_offset)
+               ActionChains(self.driver).move_to_element_with_offset(elem, offset_x, offset_y).double_click().perform()
+            else:
+               ActionChains(self.driver).double_click(elem).perform()
+        elif action_type == 'triple_click':
+            if with_offset:
+               offset_x,offset_y = self.parse_coordinates(with_offset)
+               ActionChains(self.driver).move_to_element_with_offset(elem, offset_x, offset_y).double_click().click().perform()
+            else:
+               ActionChains(self.driver).double_click(elem).click(elem).perform()
+
+
+        if with_offset or action_type != 'click':
+           ActionBuilder(self.driver).clear_actions()
+
+    def click_xpath(self,xpath,with_offset=None):
+        self.action_xpath('click',xpath,with_offset)
+    
+    def hover_over_xpath(self,xpath,with_offset=None):
+        self.action_xpath('hover_over',xpath,with_offset)
+
+    def action_xpath(self,action_type,xpath,with_offset):
+        self.logger('%s elem by xpath: %s'%(action_type,xpath))
+        elem = self.is_present(xpath=xpath)
+        if not elem:
+           self.wait.until(visibility_of_element_located((By.XPATH, xpath)), "Can't find element by xpath '%s'"%xpath)
+           elem = self.driver.find_elements(By.XPATH,xpath)[0]
+        
+        self.elem_action(elem,action_type,with_offset)
+
+        self.add_new_win_handle_if_exist()
+
+    def click_css_selector(self,css_selector,with_offset=None):
+        self.action_css_selector('click',css_selector,with_offset)
+    
+    def double_click_css_selector(self,css_selector,with_offset=None):
+        self.action_css_selector('double_click',css_selector,with_offset)
+    def action_css_selector(self,action_type,css_selector,with_offset):
         self.logger('click elem by css selector: %s'%css_selector)
         elem = self.is_present(css_selector=css_selector)
-        if elem:
-           elem.click()
-        else:
+        if not elem:
            self.wait.until(visibility_of_element_located((By.CSS_SELECTOR, css_selector)), "Can't find element by css selector '%s'"%css_selector)
-           self.driver.find_elements(By.CSS_SELECTOR,css_selector)[0].click()
-        
+           elem = self.driver.find_elements(By.CSS_SELECTOR,css_selector)[0]
+
+        self.elem_action(elem,action_type,with_offset)
+        self.add_new_win_handle_if_exist()
+
     def is_present(self,reference=None,fuzzy_search=True,xpath=None,css_selector=None,search_tag=None):
         search_info = self.get_searching_elem_info(reference,fuzzy_search,xpath,css_selector,search_tag)
         all_elements_matched = self.driver.find_elements(search_info[0],search_info[1])
         all_elements_matched_visible = [elem for elem in all_elements_matched if elem.is_displayed()]
+        all_elements_matched_in_viewport = [elem for elem in all_elements_matched_visible if self.is_in_viewport(elem)]
 
-        if (len(all_elements_matched_visible)>0):
-           return all_elements_matched_visible[0]
+        self.logger('%d elements found in viewport'%len(all_elements_matched_in_viewport))
+        for elem in all_elements_matched_in_viewport:
+            self.logger('element selected:%s'%self.get_elem_rect(elem))
+             
 
-    def wait_until_page_contains(self,reference=None,fuzzy_search=True,xpath=None,css_selector=None,tag_name=None,tm=180):
+        self.logger('%d visible elements found'%len(all_elements_matched_visible))    
+        for elem in all_elements_matched_visible:
+            self.logger('element selected:%s'%self.get_elem_rect(elem))
+        
+        
+        if len(all_elements_matched_in_viewport)>0 :
+           return all_elements_matched_in_viewport[-1]
+
+        elif len(all_elements_matched_visible)>0 :
+           return all_elements_matched_visible[-1]
+        
+    def wait_until_page_contains(self,reference=None,xpath=None,css_selector=None,tag_name=None,tm=180):
         self.logger("waiting for: '%s'"%reference)
-        search_info = self.get_searching_elem_info(reference,fuzzy_search,xpath,css_selector,tag_name)
+        search_info = self.get_searching_elem_info(reference,True,xpath,css_selector,tag_name)
         message = self.gen_message_error(search_info[2],search_info[1],reference)
         wait = WebDriverWait(self.driver,tm,0.2)
         #self.logger("wait_until_page_contains:%s,%s"%(search_info[0],search_info[1]))
         wait.until(visibility_of_element_located((search_info[0], search_info[1])), message)
+
+        return self.driver.find_element(search_info[0],search_info[1])
     
-    def check_that_page_contains(reference,tm=30):
+    def wait_until_page_contains_exactly(self,reference=None,xpath=None,css_selector=None,tag_name=None,tm=180):
+        self.logger("waiting for: '%s'"%reference)
+        search_info = self.get_searching_elem_info(reference,False,xpath,css_selector,tag_name)
+        message = self.gen_message_error(search_info[2],search_info[1],reference)
+        wait = WebDriverWait(self.driver,tm,0.2)
+        #self.logger("wait_until_page_contains:%s,%s"%(search_info[0],search_info[1]))
+        wait.until(visibility_of_element_located((search_info[0], search_info[1])), message)
+     
+    def check_that_page_contains(self,reference,tm=30):
         try:
            self.wait_until_page_contains(reference,tm=30)
            self.logger("the page contains '%s'"%reference)
@@ -356,8 +564,19 @@ class commLib:
     
     def check_that_page_contains_exactly(reference,tm=30):
         self.wait_until_page_contains(reference,False,tm=30)
-        
-         
+
+    def does_page_contain(self,reference):
+        return self.is_present(reference,True)
+
+    def does_page_contain_xpath(self,xpath):
+        return self.is_present(xpath=xpath)
+    
+    def does_page_contain_css_selector(self,css_selector):
+        return self.is_present(css_selector = css_selector)
+
+    def does_page_contain_exactly(self,reference):
+        return self.is_present(reference,False)
+             
     def get_searching_elem_info(self,reference=None,fuzzy_search=True,xpath=None,css_selector=None,tag_name=None):
         reference_content=reference
         if reference:
@@ -379,3 +598,175 @@ class commLib:
            value = css_selector
         
         return (by,value,origin_by,reference_content)
+    
+    def scroll_down_until_page_contains(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,True,'down',up_to_times,on,step)
+
+    def scroll_down_until_page_contains_exactly(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,False,'down',up_to_times,on,step)
+
+    def scroll_up_until_page_contains(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,True,'up',up_to_times,on,step) 
+    
+    def scroll_up_until_page_contains_exactly(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,False,'up',up_to_times,on,step)
+
+    def scroll_left_until_page_contains(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,True,'left',up_to_times,on,step) 
+   
+    def scroll_left_until_page_contains_exactly(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,False,'left',up_to_times,on,step)
+
+    def scroll_right_until_page_contains(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,True,'right',up_to_times,on,step) 
+    
+    def scroll_right_until_page_contains_exactly(self,reference,up_to_times=100,on=None,step=2):
+        self.scroll_until_page_contains(reference,False,'right',up_to_times,on,step)
+
+    def scroll_until_page_contains(self,reference,fuzzy_search,direct,up_to_times,on,step):
+        times=0
+        while not self.is_present(reference,fuzzy_search):
+           if direct == 'down':
+             self.scroll_down(on,step)
+           elif direct == 'up':
+             self.scroll_up(on,step)
+           elif direct == 'left':
+             self.scroll_left(on,step)
+           else:
+             self.scroll_right(on,step)
+           
+           times += 1
+           if times > up_to_times:
+              break
+           time.sleep(1)
+         
+        elem = self.is_present(reference,fuzzy_search)    
+        if elem :
+           self.to_be_in_viewport(elem)
+        else:
+           assert False,"Can't find elem '%s' after scroll"%reference
+    #to fix
+    def to_be_in_viewport_center(self,elem):
+       rect = self.get_elem_rect(elem)
+       y_offset = int(rect['y'] + rect['height']/2 - self.win_size['height']/2)
+       if y_offset > self.win_size['height']/50:
+          y_offset = int(self.win_size['height'] - rect['height']/2)
+          self.logger('try to scroll element in viewport center')
+          scroll_origin = ScrollOrigin.from_element(elem)
+          ActionChains(self.driver)\
+              .scroll_to_element(elem)\
+              .scroll_from_origin(scroll_origin,0,y_offset)\
+              .perform()
+
+    def to_be_in_viewport(self,elem):
+        if not self.is_in_viewport(elem):
+           self.logger('scroll element in viewport')
+           ActionChains(self.driver)\
+              .scroll_to_element(elem)\
+              .perform()
+
+    #step=2,means scroll by the 1/2 of screen
+    def scroll_down(self,on=None,step=2):
+        size = self.win_size
+        self.scroll(0,int(size.get("height")/step),on)
+    
+    def scroll_up(self,on=None,step=2):
+        size = self.win_size
+        self.scroll(0,0 - int(size.get("height")/step),on)
+
+    def scroll_right(self,on=None,step=2):
+        size = self.win_size
+        self.scroll(int(size.get("width")/step),0,on)
+
+    def scroll_left(self,on=None,step=2):
+        size = self.win_size
+        self.scroll(0 - int(size.get("width")/step),0,on)
+
+    def scroll(self,x,y,on):
+        action = ActionChains(self.driver)
+        if on:
+          on_elem = self.wait_until_page_contains(on,tm=30)
+          self.logger('start scroll...')
+          scroll_origin = ScrollOrigin.from_element(on_elem)
+          action.scroll_from_origin(scroll_origin, x, y).perform()
+        else:
+          action.scroll_by_amount(x,y).perform()
+
+    def open_gmail(self):
+        #gmail_url = self.get_data('gmail url')
+        self.open_url(self.get_data('gmail url'))
+        self.type('testaccount@gradual.com','identifier')
+        self.click('Next')
+        self.type('Gradual@001','Passwd')
+        time.sleep(2)
+        self.click('passwordNext')
+        code = self.gen_pin_with_google_auth_qrcode(self.get_data('qrCode-new'))
+        self.type(code,'totpPin')
+        time.sleep(2)
+        self.click('totpNext')
+        print(self.driver.window_handles)
+        cur_handles = self.driver.window_handles
+        origin_win_handle = self.driver.current_window_handle
+        self.wait_until_page_contains('Search mail')
+        #check if popup new window
+        new_handle = list(set(self.driver.window_handles) - set(cur_handles))
+        if new_handle:
+             self.logger('%d window found'%len(new_handle))
+             self.driver.switch_to.window(new_handle[0])
+             size = self.driver.execute_script('return {width: window.innerWidth, height: window.innerHeight}')
+             self.logger('first window: size:%s,handle:%s'%(size,new_handle[0]))
+             #self.driver.close() selenium.common.exceptions.WebDriverException: Message: unknown error: failed to close window in 20 seconds
+             action = ActionBuilder(self.driver)
+             action.pointer_action.move_to_location(420,500 )
+             action.pointer_action.pointer_down(MouseButton.LEFT)
+             action.pointer_action.pointer_up(MouseButton.LEFT)
+             action.perform()
+             self.driver.switch_to.window(origin_win_handle)
+             
+
+    def search_in_email(self,content):
+        tm = TimeOut(60*15)
+        lst_item = content.lower().split('+')
+        while not tm.is_timeout():
+
+           #from main page
+           self.click_exactly('Mail') 
+           #type content
+           self.type(content,'Search mail')
+           self.type(Keys.ENTER,'Search mail')
+           #open latest mail
+           self.click_xpath("(//tbody/tr[@class='zA zE' or @class='zA yO'][1]/td[4])[2]")
+           self.click_if_exist('Show images')
+           print(self.driver.window_handles)
+           self.scroll_down_until_page_contains_exactly('Forward',on=':3')
+           self.click_if_exist('Show images')
+           self.click_if_exist('Show trimmed content') # '...'
+           self.click_if_exist('Show images')
+           self.scroll_down_until_page_contains_exactly('Forward',on=':3')
+           #check cur page content
+           email_title = self.grab_content_from('.hP')
+           email_content_total = self.grab_content_from("[role='listitem']:nth-last-child(1)")
+           cur_content = email_title.lower() + '\n' + email_content_total.lower()
+           self.logger("cur email:%s"%cur_content)
+           find_flag = True
+           for item in lst_item:
+              if item not in cur_content:
+                 find_flag = False
+                 break
+           
+           if not find_flag:
+              time.sleep(10)
+           else:
+              return True
+
+        assert False, "Not recv mail which contains '%s'"%content
+           
+    def gen_pin_with_google_auth_qrcode(self,qrcode_file_path):
+        
+        qrcode_image = cv2.imread(qrcode_file_path)
+        qrCodeDetector = cv2.QRCodeDetector()
+        data, bbox, straight_qrcode = qrCodeDetector.detectAndDecode(qrcode_image)
+        #data = otpauth://totp/Google%3Atestaccount%40gradual.com?secret=xwu3a3t22iro37nlqtwanq4mohywsrau&issuer=Google
+        secret = data.split('secret=')[1].split('&issuer')[0]
+        totp = pyotp.TOTP(secret)
+        return totp.now()

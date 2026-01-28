@@ -10,33 +10,17 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 
 import os
-import configparser
-import datetime
 import time
 import sys
 
 sys.path.append("./lib")
 from comm_lib import commLib
 
-#env = os.getenv("CUR_ENV")
-#tenant = os.getenv("CUR_TARGET")
-#env='stg'
-#target='testrigor'
-
 class TestJoinMeeting(commLib):
     """join meeting test case"""
 
     def setup_method(self):
         self.init(os.getenv("TEST_ENV"),'test')
-        #---
-        #self.logger("start: setup_class")
-        #self.logger(self.driver)
-        #self.env=env
-        #self.target=target
-
-        #---load config
-        #self.config = configparser.ConfigParser()
-        #self.config.read('./config/%s.ini'%self.env)
         
     def teardown_method(self):
         #self.logger("start: teardown_class")
