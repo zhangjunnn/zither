@@ -61,7 +61,8 @@ class commLib(Util):
        options.add_argument("--disable-blink-features=AutomationControlled")
        options.add_argument("--disable-dev-shm-usage")
        options.add_argument("--no-sandbox")
-       #options.add_argument('--headless=new') #headless mode
+       if not os.path.exists(self.base_dir + '/config/secret.ini'):
+          options.add_argument('--headless=new') #headless mode
        options.add_argument("--use-fake-ui-for-media-stream")
        options.add_argument("--use-fake-device-for-media-stream")
        options.add_argument("--disable-popup-blocking")
